@@ -260,7 +260,6 @@ class MainWindow(QMainWindow):
         self.add_tile_btn.setStyleSheet("background-color: red;")
 
     def add_tile(self):
-        print("add")
         if len(self.Tiles) == 0:
             self.Tiles.append(Tile(self, 0, TileType.STOCKS))
         else:
@@ -272,7 +271,6 @@ class MainWindow(QMainWindow):
         self.mouse_y_coord = event.y()
         if self.curr_tile is not None:
             self.curr_tile.adjust_tile(self.Tiles)
-            print(self.mouse_y_coord, self.mouse_x_coord)
 
     def mouseReleaseEvent(self, event):
         self.curr_tile = None
