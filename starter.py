@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QToolBar, QAction, QVBoxLayout, QHBoxLayout, QFrame, QWidget
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QAction, QVBoxLayout, QHBoxLayout, QFrame, QWidget, QPushButton, QMenu
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon, QFont
 
@@ -27,6 +29,30 @@ class Header(QWidget):
 
         self.setLayout(hbox)
 
+class MainSubFrame(QFrame):
+    def __init__(self, *args, **kwargs):
+        super(MainSubFrame, self).__init__(*args, **kwargs)
+
+        self.setFrameShape(QFrame.Panel | QFrame.Sunken)
+
+        self.adding_button = QtWidgets.QPushButton('Add')
+        menu = QtWidgets.QMenu(
+            self.adding_button, 
+            triggered=self.on_menu_triggered
+        )
+        for text in ("", "Favourites", "Currencies", "Stocks"):
+            menu.addAction(text)
+        self.adding_button.setMenu(menu)
+        self.adding_button.setIcon(QIcon('add_icon.png')) #DOESNT WORK :(
+        
+        self.vertical_layout = QVBoxLayout(self)
+        self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
+        
+    #TODO: add adding of tiles
+    @QtCore.pyqtSlot(QtWidgets.QAction)
+    def on_menu_triggered(self, action):
+        print(action.text)
+
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -37,42 +63,14 @@ class MainWindow(QMainWindow):
         container_wid = QWidget()
         self.setCentralWidget(container_wid)
         container_wid.setLayout(vbox)
-        header = Header()
-        upper_frame = QFrame(self)
-        upper_frame.setFrameShape(QFrame.Panel | QFrame.Sunken)
-        
-        bottom_frame = QFrame(self)
-        bottom_frame.setFrameShape(QFrame.Panel | QFrame.Sunken)
-        vbox.addWidget(header)
 
+        header = Header()
+        upper_frame = MainSubFrame(self)
+        bottom_frame = MainSubFrame(self)
+
+        vbox.addWidget(header)
         vbox.addWidget(upper_frame)
         vbox.addWidget(bottom_frame)
-    ''' 
-        self.setWindowTitle("Start")
-
-        label = QLabel("Label")
-        label.setAlignment(Qt.AlignCenter)
-
-        self.setCentralWidget(label)
-
-        toolbar = QToolBar("My Toolbar")
-        self.addToolBar(toolbar)
-        self.setToolButtonStyle(Qt.ToolButtonIconOnly)
-
-        button_action = QAction(QIcon("plus-icon.png"), "Button", self)
-        button_action.setIcon(QIcon("plus-icon.png"))
-        button_action.setStatusTip("This is my button")
-        button_action.triggered.connect(self.onMyToolBarButtonClick)
-        button_action.setCheckable(True)
-        toolbar.addAction(button_action)
-
-        self.setStatusBar(QStatusBar(self))
-    '''
-
-
-
-    def onMyToolBarButtonClick(self, s):
-        print("click", s)
 
 app = QApplication([])
 window = MainWindow()
