@@ -116,7 +116,7 @@ class Tile:
 
         self.tile_width = 100
         self.tile_height = 200
-        self.frame = current_window.upper_frame
+        self.frame = current_window
         self.window = current_window
         self.x_coord = x_coord
         self.label = None
@@ -226,11 +226,52 @@ class Header(QWidget):
 
         self.setLayout(hbox)
 
+class MainSubFrame(QFrame):
+    mouse_x_coord = 0
+    mouse_y_coord = 0
+    def __init__(self, *args, **kwargs):
+        super(MainSubFrame, self).__init__(*args, **kwargs)
+
+        self.setFrameShape(QFrame.Panel | QFrame.Sunken)
+        self.tiles = []
+
+        self.adding_button = QtWidgets.QPushButton('Add')
+        menu = QtWidgets.QMenu(
+            self.adding_button, 
+            triggered=self.on_menu_triggered
+        )
+        for text in ("", "Favourites", "Currencies", "Stocks"):
+            menu.addAction(text)
+        self.adding_button.setMenu(menu)
+        self.adding_button.setIcon(QIcon('add_icon.png')) #DOESNT WORK :(
+        
+        self.vertical_layout = QVBoxLayout(self)
+        self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
+
+    def add_tile(self):
+        if len(self.tiles) == 0:
+            self.tiles.append(Tile(self, 0, TileType.CURRENCIES))
+        else:
+            l = len(self.tiles)
+            self.tiles.append(Tile(self, self.tiles[l - 1].tile_width + self.tiles[l - 1].x_coord, TileType.STOCKS))
+        
+    #TODO: add adding of tiles
+    @QtCore.pyqtSlot(QtWidgets.QAction)
+    def on_menu_triggered(self, action):
+        self.add_tile()
+
+    def mouseMoveEvent(self, event):
+        self.mouse_x_coord = event.x()
+        self.mouse_y_coord = event.y()
+        if self.curr_tile is not None:
+            self.curr_tile.adjust_tile(self.tiles)
+
+    def mouseReleaseEvent(self, event):
+        self.curr_tile = None
 
 class MainWindow(QMainWindow):
     mouse_x_coord = 0
     mouse_y_coord = 0
-    Tiles = []
     def __init__(self, *args, **kwargs):
         self.curr_tile = None
         self.add_tile_btn = None
@@ -241,16 +282,15 @@ class MainWindow(QMainWindow):
         container_wid = QWidget()
         self.setCentralWidget(container_wid)
         container_wid.setLayout(vbox)
-        self.header = Header()
 
-        self.upper_frame = QFrame(self)
-        self.upper_frame.setFrameShape(QFrame.Panel | QFrame.Sunken)
-        bottom_frame = QFrame(self)
-        bottom_frame.setFrameShape(QFrame.Panel | QFrame.Sunken)
-        vbox.addWidget(self.header)
-        vbox.addWidget(self.upper_frame)
+        header = Header()
+        upper_frame = MainSubFrame(self)
+        bottom_frame = MainSubFrame(self)
+
+        vbox.addWidget(header)
+        vbox.addWidget(upper_frame)
         vbox.addWidget(bottom_frame)
-        self.init_ui()
+        #self.init_ui()
 
     def init_ui(self):
         self.add_tile_btn = QtWidgets.QPushButton(self)
@@ -260,13 +300,6 @@ class MainWindow(QMainWindow):
 
         self.add_tile_btn.setStyleSheet("background-color: red;")
 
-    def add_tile(self):
-        if len(self.Tiles) == 0:
-            self.Tiles.append(Tile(self, 0, TileType.STOCKS))
-        else:
-            l = len(self.Tiles)
-            self.Tiles.append(Tile(self, self.Tiles[l - 1].tile_width + self.Tiles[l - 1].x_coord, TileType.STOCKS))
-
     def mouseMoveEvent(self, event):
         self.mouse_x_coord = event.x()
         self.mouse_y_coord = event.y()
@@ -275,9 +308,6 @@ class MainWindow(QMainWindow):
 
     def mouseReleaseEvent(self, event):
         self.curr_tile = None
-
-    def onMyToolBarButtonClick(self, s):
-        print("click", s)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 def read_file(file_name):
     with open(file_name, 'r') as f:
