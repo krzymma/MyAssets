@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
 from dialog import OpDialog
 import tile
+import utils
 
 class Header(QWidget):
     def __init__(self, win):
@@ -60,41 +61,45 @@ class MainSubFrame(QFrame):
         self.vertical_layout = QVBoxLayout(self)
         self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
 
-    def add_tile(self, tile_type):
+    def add_tile(self, tile_type, tile_option, asset_code):
         if len(self.tiles) == 0:
-            self.tiles.append(tile.Tile(self, 0, tile_type))
+            self.tiles.append(tile.Tile(self, 0, tile_type, tile_option, asset_code))
         else:
             l = len(self.tiles)
-            self.tiles.append(tile.Tile(self, self.tiles[l - 1].tile_width + self.tiles[l - 1].x_coord, tile_type))
+            self.tiles.append(tile.Tile(self, self.tiles[l - 1].tile_width + self.tiles[l - 1].x_coord,
+                                        tile_type, tile_option, asset_code))
 
     # TODO: apply additional setting of tiles
     @QtCore.pyqtSlot(QtWidgets.QAction)
     def on_menu_triggered(self, action):
         if action.text() == "Currencies":
-            dialog = OpDialog()
+            dialog = OpDialog(utils.TileType.CURRENCIES)
             dialog.exec_()
-            if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.CURRENCIES)
+            if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top'
+                                         or (dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
+                self.add_tile(tile.TileType.CURRENCIES, dialog.get_data()[1], dialog.get_data()[2])  # passing Tiletype,
+                                                                                                     # option-historical/live,
+                                                                                                     # asset symbol
         elif action.text() == "Favourites":
             self.add_tile(tile.TileType.FAVOURITES)
         elif action.text() == "Stocks":
-            dialog = OpDialog()
+            dialog = OpDialog(utils.TileType.STOCKS)
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (
                     dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.STOCKS)
+                self.add_tile(tile.TileType.STOCKS, dialog.get_data()[1], dialog.get_data()[2])
         elif action.text() == "Materials":
-            dialog = OpDialog()
+            dialog = OpDialog(utils.TileType.MATERIALS)
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (
                     dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.MATERIALS)
+                self.add_tile(tile.TileType.MATERIALS, dialog.get_data()[1], dialog.get_data()[2])
         elif action.text() == "Cryptocurrencies":
-            dialog = OpDialog()
+            dialog = OpDialog(utils.TileType.CRYPTO)
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (
                     dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.CRYPTO)
+                self.add_tile(tile.TileType.CRYPTO, dialog.get_data()[1], dialog.get_data()[2])
 
     """functions read mouse position after mouse click and update tile"""
     def mouseMoveEvent(self, event):

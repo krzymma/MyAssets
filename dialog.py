@@ -1,15 +1,18 @@
 from PyQt5.QtWidgets import  QLabel, QVBoxLayout, QHBoxLayout, QDialog, QLineEdit
 from PyQt5 import QtCore, QtWidgets
 
+import utils
+
 """Adding tile additional settings dialog"""
 class OpDialog(QDialog):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, tile_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWindowTitle("Input")
         self.gui_init()
         self.approved = False
         self.tile_option = "Top"
+        self.tile_type = tile_type
 
     def push_ok(self):
         self.approved = True
@@ -63,14 +66,14 @@ class OpDialog(QDialog):
     def on_menu_triggered(self, action):
         self.menu_btn.setText(action.text())
         self.tile_option = action.text()
-        if action.text() == 'Historical':
+        if action.text() == 'Historical' or self.tile_type == utils.TileType.CURRENCIES:
             self.add_asset.setEnabled(True)
         else:
             self.add_asset.setDisabled(True)#for top assets dont need to specify
 
 
     def get_data(self):
-        if self.tile_option == 'Historical':
-            return (self.approved, self.tile_option, self.add_asset.text())
+        if self.tile_option == 'Historical' or self.tile_type == utils.TileType.CURRENCIES:
+            return self.approved, self.tile_option, self.add_asset.text()
         else:
-            return (self.approved, self.tile_option, '')
+            return self.approved, self.tile_option, ''

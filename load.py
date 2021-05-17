@@ -47,17 +47,30 @@ def load_fav_assets():
 
 
 """historical data from dictionary to dataframe which will be show in GUI"""
-def load_historical_assets(tile_type, date_from, date_to):  # dokonczyc
+
+
+def load_historical_assets(tile_type, asset_code, date_from, date_to):
     if tile_type == utils.TileType.CURRENCIES:
-        data = pd.DataFrame(list(fetch.get_currency_historical_data('USD', 'PLN', '03/03/2021', '04/04/2021', '1').values()),
-                            columns=['OPEN', 'HIGH', 'LOW', 'CLOSE'],
-                            index=list(
-                                fetch.get_currency_historical_data('USD', 'PLN', '03/03/2021', '04/04/2021', '1').keys()))
-    elif tile_type == utils.TileType.CURRENCIES:
-        data = pd.DataFrame(list(fetch.get_currency_historical_data('USD', 'PLN', '03/03/2021', '04/04/2021', '1').values()),
-                            columns=['OPEN', 'HIGH', 'LOW', 'CLOSE'],
-                            index=list(
-                                fetch.get_currency_historical_data('USD', 'PLN', '03/03/2021', '04/04/2021', '1').keys()))
+        code = asset_code.split('-')
+        dict_data = fetch.get_currency_historical_data(code[0], code[1], date_from, date_to, '1')
+        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
+
+    elif tile_type == utils.TileType.STOCKS:
+        dict_data = fetch.get_stock_historical_data(asset_code, date_from, date_to, '1')
+        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME']
+
+    elif tile_type == utils.TileType.CRYPTO:
+        dict_data = fetch.get_crypto_historical_data(asset_code, date_from, date_to, '1')
+        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
+
+    # TODO: add fetching materials
+    elif tile_type == utils.TileType.MATERIALS:
+        dict_data = fetch.get_stock_historical_data(asset_code, date_from, date_to, '1')
+        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
+
+    data = pd.DataFrame(list(dict_data.values()),
+                        columns=columns,
+                        index=list(dict_data.keys()))
     return data
 
 
