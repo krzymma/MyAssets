@@ -61,13 +61,13 @@ class MainSubFrame(QFrame):
         self.vertical_layout = QVBoxLayout(self)
         self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
 
-    def add_tile(self, tile_type, tile_option, asset_code):
+    def add_tile(self, tile_type, tile_option, asset_code, start_date, end_date):
         if len(self.tiles) == 0:
-            self.tiles.append(tile.Tile(self, 0, tile_type, tile_option, asset_code))
+            self.tiles.append(tile.Tile(self, 0, tile_type, start_date, end_date, tile_option, asset_code))
         else:
             l = len(self.tiles)
             self.tiles.append(tile.Tile(self, self.tiles[l - 1].tile_width + self.tiles[l - 1].x_coord,
-                                        tile_type, tile_option, asset_code))
+                                        tile_type, start_date, end_date, tile_option, asset_code))
 
     # TODO: apply additional setting of tiles
     @QtCore.pyqtSlot(QtWidgets.QAction)
@@ -77,7 +77,8 @@ class MainSubFrame(QFrame):
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top'
                                          or (dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.CURRENCIES, dialog.get_data()[1], dialog.get_data()[2])  # passing Tiletype,
+                self.add_tile(tile.TileType.CURRENCIES, dialog.get_data()[1], dialog.get_data()[2],
+                              dialog.get_data()[3], dialog.get_data()[4])  # passing Tiletype,
                                                                                                      # option-historical/live,
                                                                                                      # asset symbol
         elif action.text() == "Favourites":
@@ -87,19 +88,22 @@ class MainSubFrame(QFrame):
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (
                     dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.STOCKS, dialog.get_data()[1], dialog.get_data()[2])
+                self.add_tile(tile.TileType.STOCKS, dialog.get_data()[1], dialog.get_data()[2],
+                              dialog.get_data()[3], dialog.get_data()[4])
         elif action.text() == "Materials":
             dialog = OpDialog(utils.TileType.MATERIALS)
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (
                     dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.MATERIALS, dialog.get_data()[1], dialog.get_data()[2])
+                self.add_tile(tile.TileType.MATERIALS, dialog.get_data()[1], dialog.get_data()[2],
+                              dialog.get_data()[3], dialog.get_data()[4])
         elif action.text() == "Cryptocurrencies":
             dialog = OpDialog(utils.TileType.CRYPTO)
             dialog.exec_()
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top' or (
                     dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
-                self.add_tile(tile.TileType.CRYPTO, dialog.get_data()[1], dialog.get_data()[2])
+                self.add_tile(tile.TileType.CRYPTO, dialog.get_data()[1], dialog.get_data()[2],
+                              dialog.get_data()[3], dialog.get_data()[4])
 
     """functions read mouse position after mouse click and update tile"""
     def mouseMoveEvent(self, event):

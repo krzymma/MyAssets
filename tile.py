@@ -35,9 +35,11 @@ class TableModel(QtCore.QAbstractTableModel):
 class Tile:
     btn_size = 15
 
-    def __init__(self, current_window, x_coord, tile_type, tile_option=None, asset_code='USD'):
+    def __init__(self, current_window, x_coord, tile_type, start_date, end_date, tile_option=None,asset_code='USD'):
         self.x_coord = 0
         self.y_coord = 0
+        self.start_date = start_date
+        self.end_date = end_date
         self.tile_option = tile_option
         self.asset_code = asset_code
         self.data = None
@@ -62,7 +64,7 @@ class Tile:
             if self.tile_option == 'Top':
                 self.data = load.load_top_currencies(self.asset_code)
             else:
-                self.data = load.load_historical_assets(TileType.CURRENCIES, self.asset_code, '03/03/2021', '04/04/2021')
+                self.data = load.load_historical_assets(TileType.CURRENCIES, self.asset_code, self.start_date, self.end_date)
 
         elif self.tile_type == TileType.FAVOURITES:
             self.data = load.load_fav_assets()
@@ -72,21 +74,21 @@ class Tile:
             if self.tile_option == 'Top':
                 self.data = load.load_top_stocks()
             else:
-                self.data = load.load_historical_assets(TileType.STOCKS, self.asset_code, '03/03/2021', '04/04/2021')
+                self.data = load.load_historical_assets(TileType.STOCKS, self.asset_code, self.start_date, self.end_date)
 
         elif self.tile_type == TileType.CRYPTO:
 
             if self.tile_option == 'Top':
                 self.data = load.load_top_cryptos()
             else:
-                self.data = load.load_historical_assets(TileType.CRYPTO, self.asset_code, '03/03/2021', '04/04/2021')
+                self.data = load.load_historical_assets(TileType.CRYPTO, self.asset_code, self.start_date, self.end_date)
 
         elif self.tile_type == TileType.MATERIALS:
 
             if self.tile_option == 'Top':
                 self.data = load.load_top_futures()
             else:
-                self.data = load.load_historical_assets(TileType.MATERIALS, self.asset_code, '03/03/2021', '04/04/2021')
+                self.data = load.load_historical_assets(TileType.MATERIALS, self.asset_code, self.start_date, self.end_date)
 
     def init_ui(self):
 

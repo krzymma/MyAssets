@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import  QLabel, QVBoxLayout, QHBoxLayout, QDialog, QLineEdit
+from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QHBoxLayout, QDialog, QLineEdit, QDateEdit
 from PyQt5 import QtCore, QtWidgets
 
 import utils
@@ -11,7 +12,7 @@ class OpDialog(QDialog):
         self.setWindowTitle("Input")
         self.gui_init()
         self.approved = False
-        self.tile_option = "Top"
+        self.tile_option = ""
         self.tile_type = tile_type
 
     def push_ok(self):
@@ -51,14 +52,22 @@ class OpDialog(QDialog):
         close_btn.setText("CLOSE")
         close_btn.pressed.connect(self.push_close)
 
+        self.date_from = QDateEdit(QDate().currentDate())
+        self.date_to = QDateEdit(QDate().currentDate())
+
         row_3 = QHBoxLayout()
-        row_3.addWidget(close_btn)
-        row_3.addWidget(ok_btn)
+        row_3.addWidget(self.date_from)
+        row_3.addWidget(self.date_to)
+
+        row_4 = QHBoxLayout()
+        row_4.addWidget(close_btn)
+        row_4.addWidget(ok_btn)
 
         layout = QVBoxLayout()
         layout.addLayout(row_1)
         layout.addLayout(row_2)
         layout.addLayout(row_3)
+        layout.addLayout(row_4)
 
         self.setLayout(layout)
 
@@ -68,12 +77,25 @@ class OpDialog(QDialog):
         self.tile_option = action.text()
         if action.text() == 'Historical' or self.tile_type == utils.TileType.CURRENCIES:
             self.add_asset.setEnabled(True)
+        if action.text() == 'Historical':
+            self.date_from.setEnabled(True)
+            self.date_to.setEnabled(True)
         else:
             self.add_asset.setDisabled(True)#for top assets dont need to specify
-
+            self.date_from.setDisabled(True)
+            self.date_to.setDisabled(True)
 
     def get_data(self):
+
+        chosen_date = self.date_from.text().split('.')
+        start_date = '' + chosen_date[1] + '/' + chosen_date[0] + '/' + chosen_date[2] + ''
+        chosen_date = self.date_to.text().split('.')
+        end_date = '' + chosen_date[1] + '/' + chosen_date[0] + '/' + chosen_date[2] + ''
+
+        if self.tile_option == "":
+            self.approved = False
+
         if self.tile_option == 'Historical' or self.tile_type == utils.TileType.CURRENCIES:
-            return self.approved, self.tile_option, self.add_asset.text()
+            return self.approved, self.tile_option, self.add_asset.text(), start_date, end_date
         else:
-            return self.approved, self.tile_option, ''
+            return self.approved, self.tile_option, '', start_date, end_date

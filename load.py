@@ -63,9 +63,8 @@ def load_historical_assets(tile_type, asset_code, date_from, date_to):
         dict_data = fetch.get_crypto_historical_data(asset_code, date_from, date_to, '1')
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
 
-    # TODO: add fetching materials
     elif tile_type == utils.TileType.MATERIALS:
-        dict_data = fetch.get_stock_historical_data(asset_code, date_from, date_to, '1')
+        dict_data = fetch.get_futures_historical_data(asset_code, date_from, date_to, '1')
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     data = pd.DataFrame(list(dict_data.values()),

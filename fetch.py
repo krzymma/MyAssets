@@ -30,6 +30,14 @@ def get_stock_historical_data(stock, from_date, to_date, day_interval):
     return utils.convert_data_to_dict(data_csv, NO_COL_STOCK)
 
 
+def get_futures_historical_data(material, from_date, to_date, day_interval):
+    url = 'https://www.marketwatch.com/investing/future/'+ material +\
+        '/downloaddatapartial?startdate='+from_date+'%2000:00:00&enddate='+to_date+\
+          '%2023:59:59&daterange=d30&frequency=p'+day_interval+'d&csvdownload=true&downloadpartial=false&newdates=false'
+    data_csv = requests.get(url)
+    return utils.convert_data_to_dict(data_csv, NO_COL_CURR)
+
+
 """functions download live values of assets"""
 def get_live_val(adress):
     html_data = requests.get(adress).text
