@@ -1,5 +1,6 @@
-from enum import Enum 
-
+import sys
+from enum import Enum
+import os
 class TileType(Enum):
     STOCKS = 1
     CURRENCIES = 2
@@ -8,6 +9,7 @@ class TileType(Enum):
     MATERIALS = 5
 
 def read_file(file_name):
+    file_name = os.path.dirname(os.path.abspath(__file__)) + '/' + file_name
     with open(file_name, 'r') as f:
         content = (f.readlines())
     return [x.strip() for x in content]

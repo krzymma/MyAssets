@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QFrame, \
     QWidget
 from PyQt5.QtGui import QIcon, QFont
@@ -57,12 +59,12 @@ class MainSubFrame(QFrame):
         for text in ("Favourites", "Currencies", "Stocks", "Materials", "Cryptocurrencies"):
             menu.addAction(text)
         self.adding_button.setMenu(menu)
-        self.adding_button.setIcon(QIcon('add_icon.png'))  # DOESNT WORK :(
+        self.adding_button.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/' + 'plus_icon.svg'))  # DOESNT WORK :(
 
         self.vertical_layout = QVBoxLayout(self)
         self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
 
-    def add_tile(self, tile_type, tile_option, asset_code, start_date, end_date):
+    def add_tile(self, tile_type, tile_option=None, asset_code=None, start_date=None, end_date=None):
         if len(self.tiles) == 0:
             self.tiles.append(tile.Tile(self, 0, tile_type, start_date, end_date, tile_option, asset_code))
         else:
