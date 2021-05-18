@@ -70,8 +70,14 @@ def get_live_material_rate(material):
 def get_top_currencies(currency):
     adress = 'https://www.x-rates.com/table/?from=' + currency + '&amount=1'
     html_data = requests.get(adress).text
+
     soup = BeautifulSoup(html_data, 'lxml')
+
+    if len(soup.find_all('table', class_="tablesorter ratesTable")) == 0:  # incorrect currency code provided
+        return None
+
     rates = soup.find('table', class_="tablesorter ratesTable").find_all('td')
+
     result = {}
     for i in range(0, len(rates), 3):
         result[rates[i].text] = (rates[i + 1].text, rates[i + 2].text,)

@@ -35,7 +35,7 @@ class TableModel(QtCore.QAbstractTableModel):
 class Tile:
     btn_size = 15
 
-    def __init__(self, current_window, x_coord, tile_type, start_date, end_date, tile_option=None,asset_code='USD'):
+    def __init__(self, current_window, x_coord, tile_type, start_date, end_date, tile_option=None, asset_code='USD'):
         self.x_coord = 0
         self.y_coord = 0
         self.start_date = start_date
@@ -53,11 +53,11 @@ class Tile:
         self.moving_btn = None
         self.tile_type = tile_type
         self.load_data()
-        self.model = TableModel(self.data)
         self.move = 0
+        if self.data is not None:
+            self.model = TableModel(self.data)
         self.init_ui()
 
-    # TODO: add rest of loading functions and add assetCode to top currencies
     def load_data(self):
         if self.tile_type == TileType.CURRENCIES:
 
@@ -91,11 +91,13 @@ class Tile:
                 self.data = load.load_historical_assets(TileType.MATERIALS, self.asset_code, self.start_date, self.end_date)
 
     def init_ui(self):
-
         self.data_table = QtWidgets.QTableView(self.frame)
-        self.data_table.setModel(self.model)
+        if self.data is not None:
+            self.data_table.setModel(self.model)
+
         self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
         self.data_table.show()
+
         self.resizing_btn = QtWidgets.QPushButton(self.frame)
         self.resizing_btn.pressed.connect(self.resizing_on)
         self.resizing_btn.setGeometry(self.y_coord, self.x_coord, self.btn_size, self.btn_size)

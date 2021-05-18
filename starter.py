@@ -8,6 +8,7 @@ from dialog import OpDialog
 import tile
 import utils
 
+
 class Header(QWidget):
     def __init__(self, win):
         super(QWidget, self).__init__()
@@ -69,7 +70,6 @@ class MainSubFrame(QFrame):
             self.tiles.append(tile.Tile(self, self.tiles[l - 1].tile_width + self.tiles[l - 1].x_coord,
                                         tile_type, start_date, end_date, tile_option, asset_code))
 
-    # TODO: apply additional setting of tiles
     @QtCore.pyqtSlot(QtWidgets.QAction)
     def on_menu_triggered(self, action):
         if action.text() == "Currencies":
@@ -78,9 +78,9 @@ class MainSubFrame(QFrame):
             if dialog.get_data()[0] and (dialog.get_data()[1] == 'Top'
                                          or (dialog.get_data()[1] == 'Historical' and dialog.get_data()[2] != '')):
                 self.add_tile(tile.TileType.CURRENCIES, dialog.get_data()[1], dialog.get_data()[2],
-                              dialog.get_data()[3], dialog.get_data()[4])  # passing Tiletype,
-                                                                                                     # option-historical/live,
-                                                                                                     # asset symbol
+                              dialog.get_data()[3], dialog.get_data()[4])  # passing: Tiletype,
+                                                                            # option-historical/live, asset symbol,
+                                                                            # start date and end date
         elif action.text() == "Favourites":
             self.add_tile(tile.TileType.FAVOURITES)
         elif action.text() == "Stocks":

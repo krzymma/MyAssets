@@ -75,15 +75,18 @@ class OpDialog(QDialog):
     def on_menu_triggered(self, action):
         self.menu_btn.setText(action.text())
         self.tile_option = action.text()
+        if action.text() == 'Top':
+            self.add_asset.setDisabled(True)
+            self.date_from.setDisabled(True)
+            self.date_to.setDisabled(True)
+
         if action.text() == 'Historical' or self.tile_type == utils.TileType.CURRENCIES:
             self.add_asset.setEnabled(True)
+
         if action.text() == 'Historical':
             self.date_from.setEnabled(True)
             self.date_to.setEnabled(True)
-        else:
-            self.add_asset.setDisabled(True)#for top assets dont need to specify
-            self.date_from.setDisabled(True)
-            self.date_to.setDisabled(True)
+
 
     def get_data(self):
 

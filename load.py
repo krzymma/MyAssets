@@ -52,7 +52,10 @@ def load_fav_assets():
 def load_historical_assets(tile_type, asset_code, date_from, date_to):
     if tile_type == utils.TileType.CURRENCIES:
         code = asset_code.split('-')
-        dict_data = fetch.get_currency_historical_data(code[0], code[1], date_from, date_to, '1')
+        if len(code) == 1:
+            dict_data = {}
+        else:
+            dict_data = fetch.get_currency_historical_data(code[0], code[1], date_from, date_to, '1')
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     elif tile_type == utils.TileType.STOCKS:
@@ -75,6 +78,9 @@ def load_historical_assets(tile_type, asset_code, date_from, date_to):
 
 def load_top_currencies(currency):
     rates = fetch.get_top_currencies(currency)
+    if rates is None:
+        return None
+
     data = pd.DataFrame(list(rates.values()),
                         columns=['To ' + currency, 'From ' + currency],
                         index=list(rates.keys()))
