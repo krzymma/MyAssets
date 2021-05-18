@@ -70,6 +70,15 @@ class MainSubFrame(QFrame):
             self.tiles.append(tile.Tile(self, self.tiles[l - 1].tile_width + self.tiles[l - 1].x_coord,
                                         tile_type, start_date, end_date, tile_option, asset_code))
 
+    def remove_tile(self, tile):
+        self.tiles[self.tiles.index(tile)] = None
+        new_tiles_list = []
+        for i in range(0, len(self.tiles)):
+            if self.tiles[i] is not None:
+                new_tiles_list.append(self.tiles[i])
+        self.tiles = new_tiles_list
+
+
     @QtCore.pyqtSlot(QtWidgets.QAction)
     def on_menu_triggered(self, action):
         if action.text() == "Currencies":

@@ -105,11 +105,26 @@ class Tile:
         self.resizing_btn.setStyleSheet("background-color: lightgrey;")
         self.resizing_btn.show()
 
+        self.remove_btn = QtWidgets.QPushButton(self.frame)
+        self.remove_btn.pressed.connect(self.remove_self)
+        self.remove_btn.setText("X")
+        self.remove_btn.setGeometry(self.y_coord, self.x_coord, self.btn_size, self.btn_size)
+        self.remove_btn.move(self.tile_width - self.btn_size + self.x_coord, self.y_coord)
+        self.remove_btn.setStyleSheet("background-color: red;")
+        self.remove_btn.show()
+
         self.moving_btn = QtWidgets.QPushButton(self.frame)
         self.moving_btn.pressed.connect(self.moving_on)
         self.moving_btn.setGeometry(self.x_coord, self.y_coord, self.btn_size, self.btn_size)
         self.moving_btn.setStyleSheet("background-color: grey;")
         self.moving_btn.show()
+
+    def remove_self(self):
+        self.frame.remove_tile(self)
+        self.remove_btn.hide()
+        self.resizing_btn.hide()
+        self.moving_btn.hide()
+        self.data_table.hide()
 
     """move/resize tile functions"""
     def moving_on(self):
@@ -138,12 +153,14 @@ class Tile:
             right_limit = self.window.width() - self.tile_width
         else:
             right_limit = tiles[idx + 1].x_coord - self.tile_width
+
         if left_limit < self.window.mouse_x_coord < right_limit:
             self.x_coord = self.window.mouse_x_coord
 
             self.moving_btn.move(self.window.mouse_x_coord, self.y_coord)
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width,
                                    self.y_coord - self.btn_size + self.tile_height)
+            self.remove_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width, self.y_coord)
             self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
         else:
             """do nothing"""
@@ -161,4 +178,5 @@ class Tile:
         if new_width + self.x_coord < next_tile_x and new_width > MIN_TILE_WIDTH:
             self.tile_width = new_width
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size, self.tile_height - self.btn_size)
+            self.remove_btn.move(self.window.mouse_x_coord - self.btn_size, self.y_coord)
             self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
