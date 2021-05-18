@@ -1,7 +1,9 @@
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtWidgets import QFileDialog, QWidget, QMessageBox
 from utils import TileType
-import load 
+import load
+import os
 
 MIN_TILE_WIDTH = 200
 
@@ -32,10 +34,11 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.index[section])
 
 
-class Tile:
+class Tile(QWidget):
     btn_size = 15
 
     def __init__(self, current_window, x_coord, tile_type, start_date, end_date, tile_option=None, asset_code='USD'):
+        super(QWidget, self).__init__()
         self.x_coord = 0
         self.y_coord = 0
         self.start_date = start_date
@@ -105,6 +108,14 @@ class Tile:
         self.resizing_btn.setStyleSheet("background-color: lightgrey;")
         self.resizing_btn.show()
 
+        self.save_btn = QtWidgets.QPushButton(self.frame)
+        self.save_btn.setText("Save")
+        self.save_btn.pressed.connect(self.save_data_to_file)
+        self.save_btn.setGeometry(self.y_coord, self.x_coord, 3*self.btn_size, self.btn_size)
+        self.save_btn.move(self.x_coord + 2*self.btn_size, self.y_coord)
+        self.save_btn.setStyleSheet("background-color: lightgrey;")
+        self.save_btn.show()
+
         self.remove_btn = QtWidgets.QPushButton(self.frame)
         self.remove_btn.pressed.connect(self.remove_self)
         self.remove_btn.setText("X")
@@ -119,11 +130,29 @@ class Tile:
         self.moving_btn.setStyleSheet("background-color: grey;")
         self.moving_btn.show()
 
+    def save_data_to_file(self):
+        folder_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select folder where your data will be saved')
+        print(folder_path)
+        if folder_path != '':
+            self.data.to_csv(folder_path + '/dataCSV.csv', index=False, header=True)
+            self.data.to_html(folder_path + '/dataHTML.html')
+            info = "Your data saved successfully"
+        else:
+            info = 'Data not saved'
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(info)
+        msg.setWindowTitle("Saving Data")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
+
     def remove_self(self):
         self.frame.remove_tile(self)
         self.remove_btn.hide()
         self.resizing_btn.hide()
         self.moving_btn.hide()
+        self.save_btn.hide()
         self.data_table.hide()
 
     """move/resize tile functions"""
@@ -160,6 +189,7 @@ class Tile:
             self.moving_btn.move(self.window.mouse_x_coord, self.y_coord)
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width,
                                    self.y_coord - self.btn_size + self.tile_height)
+            self.save_btn.move(self.window.mouse_x_coord + 2*self.btn_size, self.y_coord)
             self.remove_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width, self.y_coord)
             self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
         else:
