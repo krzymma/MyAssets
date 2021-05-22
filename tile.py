@@ -1,3 +1,4 @@
+from specific import SpecWindow
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QWidget, QMessageBox
@@ -48,12 +49,13 @@ class Tile(QWidget):
         self.data = None
         self.tile_width = MIN_TILE_WIDTH
         self.tile_height = current_window.height()
-        self.frame = current_window
-        self.window = current_window
+        self.frame = current_window #??? 
+        self.window = current_window #???
         self.x_coord = x_coord
         self.data_table = None
         self.resizing_btn = None
         self.moving_btn = None
+        self.spec_window = None
         self.tile_type = tile_type
         self.load_data()
         self.move = 0
@@ -97,6 +99,7 @@ class Tile(QWidget):
         self.data_table = QtWidgets.QTableView(self.frame)
         if self.data is not None:
             self.data_table.setModel(self.model)
+            self.data_table.doubleClicked.connect(self.handle_double_click)
 
         self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
         self.data_table.show()
@@ -210,3 +213,13 @@ class Tile(QWidget):
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size, self.tile_height - self.btn_size)
             self.remove_btn.move(self.window.mouse_x_coord - self.btn_size, self.y_coord)
             self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
+
+    def handle_single_click(self, item):
+        #This function will manage adding asset to wallet
+        pass
+
+    def handle_double_click(self, item):
+        asset_code = self.data.index[item.row()]
+        name = self.data['Name'][item.row()]
+        self.spec_window = SpecWindow(self.tile_type, asset_code, name)
+        self.spec_window.show()

@@ -59,7 +59,7 @@ class MainSubFrame(QFrame):
         for text in ("Favourites", "Currencies", "Stocks", "Materials", "Cryptocurrencies"):
             menu.addAction(text)
         self.adding_button.setMenu(menu)
-        self.adding_button.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/' + 'plus_icon.svg'))  # DOESNT WORK :(
+        self.adding_button.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/' + 'plus_icon.svg'))
 
         self.vertical_layout = QVBoxLayout(self)
         self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)

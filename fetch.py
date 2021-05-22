@@ -1,41 +1,42 @@
 from bs4 import BeautifulSoup
-import utils
+from utils import convert_data_to_dict
+from utils import Interval
 import requests
 NO_COL_CURR = 5
 NO_COL_CRYPTO = 5
 NO_COL_STOCK = 6
 
 """functions download historical data in csv format"""
-def get_currency_historical_data(from_currency, to_currency, from_date, to_date, day_interval):
+def get_currency_historical_data(from_currency, to_currency, from_date, to_date, interval=Interval.DAY):
     url = 'https://www.marketwatch.com/investing/currency/' + from_currency + to_currency + \
-          '/downloaddatapartial?startdate=' + from_date + '+%2000:00:00&enddate=' + to_date + '%2023:59:59&daterange=d30&frequency=p' + day_interval + \
-          'd&csvdownload=true&downloadpartial=false&newdates=false'
+          '/downloaddatapartial?startdate=' + from_date + '+%2000:00:00&enddate=' + to_date + '%2023:59:59&daterange=d30&frequency=p' + str(interval) + \
+          '&csvdownload=true&downloadpartial=false&newdates=false'
     data_csv = requests.get(url)
-    return utils.convert_data_to_dict(data_csv, NO_COL_CURR)
+    return convert_data_to_dict(data_csv, NO_COL_CURR)
 
 
-def get_crypto_historical_data(crypto, from_date, to_date, day_interval, to_currency='usd'):
+def get_crypto_historical_data(crypto, from_date, to_date, interval=Interval.DAY, to_currency='usd'):
     url = 'https://www.marketwatch.com/investing/cryptocurrency/' + crypto + to_currency + '' \
            '/downloaddatapartial?startdate=' + from_date + '%2000:00:00&enddate=' + to_date + '%2023:59:59&daterange=d30&frequency=' \
-           'p' + day_interval + 'd&csvdownload=true&downloadpartial=false&newdates=false'
+           'p' + str(interval) + '&csvdownload=true&downloadpartial=false&newdates=false'
     data_csv = requests.get(url)
-    return utils.convert_data_to_dict(data_csv, NO_COL_CRYPTO)
+    return convert_data_to_dict(data_csv, NO_COL_CRYPTO)
 
 
-def get_stock_historical_data(stock, from_date, to_date, day_interval):
+def get_stock_historical_data(stock, from_date, to_date, interval=Interval.DAY):
     url = 'https://www.marketwatch.com/investing/stock/' + stock + '' \
     '/downloaddatapartial?startdate=' + from_date + '%2000:00:00&enddate=' + to_date + '%2023:59:59&daterange=d30&frequency=' \
-    'p' + day_interval + 'd&csvdownload=true&downloadpartial=false&newdates=false'
+    'p' + str(interval) + '&csvdownload=true&downloadpartial=false&newdates=false'
     data_csv = requests.get(url)
-    return utils.convert_data_to_dict(data_csv, NO_COL_STOCK)
+    return convert_data_to_dict(data_csv, NO_COL_STOCK)
 
 
-def get_futures_historical_data(material, from_date, to_date, day_interval):
+def get_futures_historical_data(material, from_date, to_date, interval=Interval.DAY):
     url = 'https://www.marketwatch.com/investing/future/'+ material +\
         '/downloaddatapartial?startdate='+from_date+'%2000:00:00&enddate='+to_date+\
-          '%2023:59:59&daterange=d30&frequency=p'+day_interval+'d&csvdownload=true&downloadpartial=false&newdates=false'
+          '%2023:59:59&daterange=d30&frequency=p'+ str(interval) +'&csvdownload=true&downloadpartial=false&newdates=false'
     data_csv = requests.get(url)
-    return utils.convert_data_to_dict(data_csv, NO_COL_CURR)
+    return convert_data_to_dict(data_csv, NO_COL_CURR)
 
 
 """functions download live values of assets"""

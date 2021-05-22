@@ -1,5 +1,6 @@
 import fetch
 import utils
+from utils import Interval
 import pandas as pd
 
 """functions load data from fav.txt file"""
@@ -49,25 +50,25 @@ def load_fav_assets():
 """historical data from dictionary to dataframe which will be show in GUI"""
 
 
-def load_historical_assets(tile_type, asset_code, date_from, date_to):
+def load_historical_assets(tile_type, asset_code, date_from, date_to, interval=Interval.DAY):
     if tile_type == utils.TileType.CURRENCIES:
         code = asset_code.split('-')
         if len(code) == 1:
             dict_data = {}
         else:
-            dict_data = fetch.get_currency_historical_data(code[0], code[1], date_from, date_to, '1')
+            dict_data = fetch.get_currency_historical_data(code[0], code[1], date_from, date_to, interval)
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     elif tile_type == utils.TileType.STOCKS:
-        dict_data = fetch.get_stock_historical_data(asset_code, date_from, date_to, '1')
+        dict_data = fetch.get_stock_historical_data(asset_code, date_from, date_to, interval)
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME']
 
     elif tile_type == utils.TileType.CRYPTO:
-        dict_data = fetch.get_crypto_historical_data(asset_code, date_from, date_to, '1')
+        dict_data = fetch.get_crypto_historical_data(asset_code, date_from, date_to, interval)
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     elif tile_type == utils.TileType.MATERIALS:
-        dict_data = fetch.get_futures_historical_data(asset_code, date_from, date_to, '1')
+        dict_data = fetch.get_futures_historical_data(asset_code, date_from, date_to, interval)
         columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     data = pd.DataFrame(list(dict_data.values()),
