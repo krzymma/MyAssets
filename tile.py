@@ -7,6 +7,7 @@ import load
 import os
 
 MIN_TILE_WIDTH = 200
+ZERO_COL_WIDTH = 42
 
 """table model in Tile"""
 class TableModel(QtCore.QAbstractTableModel):
@@ -40,6 +41,7 @@ class Tile(QWidget):
 
     def __init__(self, current_window, x_coord, tile_type, start_date, end_date, tile_option=None, asset_code='USD'):
         super(QWidget, self).__init__()
+        self.MAX_TILE_WIDTH = MIN_TILE_WIDTH
         self.x_coord = 0
         self.y_coord = 0
         self.start_date = start_date
@@ -49,8 +51,7 @@ class Tile(QWidget):
         self.data = None
         self.tile_width = MIN_TILE_WIDTH
         self.tile_height = current_window.height()
-        self.frame = current_window #??? 
-        self.window = current_window #???
+        self.window = current_window
         self.x_coord = x_coord
         self.data_table = None
         self.resizing_btn = None
@@ -96,22 +97,23 @@ class Tile(QWidget):
                 self.data = load.load_historical_assets(TileType.MATERIALS, self.asset_code, self.start_date, self.end_date)
 
     def init_ui(self):
-        self.data_table = QtWidgets.QTableView(self.frame)
+        self.data_table = QtWidgets.QTableView(self.window)
         if self.data is not None:
             self.data_table.setModel(self.model)
             self.data_table.doubleClicked.connect(self.handle_double_click)
-
+        self.data_table.resizeColumnsToContents()
+        self.adjust_initial_tile_width()
         self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
         self.data_table.show()
 
-        self.resizing_btn = QtWidgets.QPushButton(self.frame)
+        self.resizing_btn = QtWidgets.QPushButton(self.window)
         self.resizing_btn.pressed.connect(self.resizing_on)
         self.resizing_btn.setGeometry(self.y_coord, self.x_coord, self.btn_size, self.btn_size)
         self.resizing_btn.move(self.tile_width - self.btn_size + self.x_coord, self.tile_height - self.btn_size)
         self.resizing_btn.setStyleSheet("background-color: lightgrey;")
         self.resizing_btn.show()
 
-        self.save_btn = QtWidgets.QPushButton(self.frame)
+        self.save_btn = QtWidgets.QPushButton(self.window)
         self.save_btn.setText("Save")
         self.save_btn.pressed.connect(self.save_data_to_file)
         self.save_btn.setGeometry(self.y_coord, self.x_coord, 3*self.btn_size, self.btn_size)
@@ -119,7 +121,7 @@ class Tile(QWidget):
         self.save_btn.setStyleSheet("background-color: lightgrey;")
         self.save_btn.show()
 
-        self.remove_btn = QtWidgets.QPushButton(self.frame)
+        self.remove_btn = QtWidgets.QPushButton(self.window)
         self.remove_btn.pressed.connect(self.remove_self)
         self.remove_btn.setText("X")
         self.remove_btn.setGeometry(self.y_coord, self.x_coord, self.btn_size, self.btn_size)
@@ -127,11 +129,19 @@ class Tile(QWidget):
         self.remove_btn.setStyleSheet("background-color: red;")
         self.remove_btn.show()
 
-        self.moving_btn = QtWidgets.QPushButton(self.frame)
+        self.moving_btn = QtWidgets.QPushButton(self.window)
         self.moving_btn.pressed.connect(self.moving_on)
         self.moving_btn.setGeometry(self.x_coord, self.y_coord, self.btn_size, self.btn_size)
         self.moving_btn.setStyleSheet("background-color: grey;")
         self.moving_btn.show()
+
+    def adjust_initial_tile_width(self):
+        no_col = self.model.columnCount(1) + 1
+        abs_width = 0
+        for i in range(0, no_col + 1):
+            abs_width += self.data_table.columnWidth(i)
+        self.MAX_TILE_WIDTH = abs_width + ZERO_COL_WIDTH
+        self.tile_width = self.MAX_TILE_WIDTH
 
     def save_data_to_file(self):
         folder_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select folder where your data will be saved')
@@ -151,7 +161,7 @@ class Tile(QWidget):
         msg.exec_()
 
     def remove_self(self):
-        self.frame.remove_tile(self)
+        self.window.remove_tile(self)
         self.remove_btn.hide()
         self.resizing_btn.hide()
         self.moving_btn.hide()
@@ -208,7 +218,7 @@ class Tile(QWidget):
             next_tile_x = tiles[idx + 1].x_coord
 
         new_width = self.window.mouse_x_coord - self.x_coord
-        if new_width + self.x_coord < next_tile_x and new_width > MIN_TILE_WIDTH:
+        if new_width + self.x_coord < next_tile_x and new_width > MIN_TILE_WIDTH and new_width < self.MAX_TILE_WIDTH:
             self.tile_width = new_width
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size, self.tile_height - self.btn_size)
             self.remove_btn.move(self.window.mouse_x_coord - self.btn_size, self.y_coord)

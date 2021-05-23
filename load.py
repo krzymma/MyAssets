@@ -57,23 +57,24 @@ def load_historical_assets(tile_type, asset_code, date_from, date_to, interval=I
             dict_data = {}
         else:
             dict_data = fetch.get_currency_historical_data(code[0], code[1], date_from, date_to, interval)
-        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
+        columns = ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     elif tile_type == utils.TileType.STOCKS:
         dict_data = fetch.get_stock_historical_data(asset_code, date_from, date_to, interval)
-        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME']
+        columns = ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE', 'VOLUME']
 
     elif tile_type == utils.TileType.CRYPTO:
         dict_data = fetch.get_crypto_historical_data(asset_code, date_from, date_to, interval)
-        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
+        columns = ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     elif tile_type == utils.TileType.MATERIALS:
         dict_data = fetch.get_futures_historical_data(asset_code, date_from, date_to, interval)
-        columns = ['OPEN', 'HIGH', 'LOW', 'CLOSE']
+        columns = ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE']
 
-    data = pd.DataFrame(list(dict_data.values()),
+    result = merge_key_value(dict_data)
+    data = pd.DataFrame(result,
                         columns=columns,
-                        index=list(dict_data.keys()))
+                        index=range(1, len(result) + 1))
     return data
 
 
@@ -81,30 +82,42 @@ def load_top_currencies(currency):
     rates = fetch.get_top_currencies(currency)
     if rates is None:
         return None
-
-    data = pd.DataFrame(list(rates.values()),
-                        columns=['To ' + currency, 'From ' + currency],
-                        index=list(rates.keys()))
+    result = merge_key_value(rates)
+    data = pd.DataFrame(result,
+                        columns=['Name', 'To ' + currency, 'From ' + currency],
+                        index=range(1, len(result) + 1))
     return data
 
 
 def load_top_stocks():
     rates = fetch.get_most_active_stocks()
-    data = pd.DataFrame(list(rates.values()),
-                        columns=['Name', 'Last price'],
-                        index=list(rates.keys()))
+    result = merge_key_value(rates)
+    data = pd.DataFrame(result,
+                        columns=['Code', 'Name', 'Last price'],
+                        index=range(1, len(result) + 1)
+    )
     return data
 
 def load_top_futures():
     rates = fetch.get_top_futures()
-    data = pd.DataFrame(list(rates.values()),
-                        columns=['Name', 'Last price'],
-                        index=list(rates.keys()))
+    result = merge_key_value(rates)
+    data = pd.DataFrame(result,
+                        columns=['Code', 'Name', 'Last price'],
+                        index=range(1, len(result) + 1)
+                        )
     return data
 
 def load_top_cryptos():
     rates = fetch.get_top_cryptos()
-    data = pd.DataFrame(list(rates.values()),
-                        columns=['Name', 'Last price'],
-                        index=list(rates.keys()))
+    result = merge_key_value(rates)
+    data = pd.DataFrame(result,
+                        columns=['Code', 'Name', 'Last price'],
+                        index=range(1, len(result) + 1)
+                        )
     return data
+
+def merge_key_value(rates):
+    result = []
+    for i in range(0, len(list(rates.values()))):
+        result.append((list(rates.keys())[i],) + list(rates.values())[i])
+    return result
