@@ -1,14 +1,16 @@
+from PyQt5.QtGui import QFont
+
 from specific import SpecWindow
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QWidget, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QWidget, QMessageBox, QVBoxLayout, QLabel
 from utils import TileType
 import load
-import os
+
 
 MIN_TILE_WIDTH = 200
 ZERO_COL_WIDTH = 42
-
+TITLE_HEIGHT = 70
 """table model in Tile"""
 class TableModel(QtCore.QAbstractTableModel):
 
@@ -50,7 +52,7 @@ class Tile(QWidget):
         self.asset_code = asset_code
         self.data = None
         self.tile_width = MIN_TILE_WIDTH
-        self.tile_height = current_window.height()
+        self.tile_height = current_window.height() - self.y_coord
         self.window = current_window
         self.x_coord = x_coord
         self.data_table = None
@@ -58,6 +60,7 @@ class Tile(QWidget):
         self.moving_btn = None
         self.spec_window = None
         self.tile_type = tile_type
+        self.tile_title = ""
         self.load_data()
         self.move = 0
         if self.data is not None:
@@ -69,8 +72,10 @@ class Tile(QWidget):
 
             if self.tile_option == 'Top':
                 self.data = load.load_top_currencies(self.asset_code)
+                self.tile_title = "Top exchange rates for " + self.asset_code
             else:
                 self.data = load.load_historical_assets(TileType.CURRENCIES, self.asset_code, self.start_date, self.end_date)
+                self.tile_title = "Historical " + self.asset_code
 
         elif self.tile_type == TileType.FAVOURITES:
             self.data = load.load_fav_assets()
@@ -79,31 +84,38 @@ class Tile(QWidget):
 
             if self.tile_option == 'Top':
                 self.data = load.load_top_stocks()
+                self.tile_title = "Most active stocks"
             else:
                 self.data = load.load_historical_assets(TileType.STOCKS, self.asset_code, self.start_date, self.end_date)
+                self.tile_title = "Historical for " + self.asset_code
 
         elif self.tile_type == TileType.CRYPTO:
 
             if self.tile_option == 'Top':
                 self.data = load.load_top_cryptos()
+                self.tile_title = "Top Cryptocurrencies"
             else:
                 self.data = load.load_historical_assets(TileType.CRYPTO, self.asset_code, self.start_date, self.end_date)
+                self.tile_title = "Historical for " + self.asset_code
 
         elif self.tile_type == TileType.MATERIALS:
 
             if self.tile_option == 'Top':
                 self.data = load.load_top_futures()
+                self.tile_title = "Top futures"
             else:
                 self.data = load.load_historical_assets(TileType.MATERIALS, self.asset_code, self.start_date, self.end_date)
+                self.tile_title = "Historical for " + self.asset_code
 
     def init_ui(self):
         self.data_table = QtWidgets.QTableView(self.window)
         if self.data is not None:
             self.data_table.setModel(self.model)
             self.data_table.doubleClicked.connect(self.handle_double_click)
+
         self.data_table.resizeColumnsToContents()
         self.adjust_initial_tile_width()
-        self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
+        self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width, self.tile_height - TITLE_HEIGHT)
         self.data_table.show()
 
         self.resizing_btn = QtWidgets.QPushButton(self.window)
@@ -113,11 +125,18 @@ class Tile(QWidget):
         self.resizing_btn.setStyleSheet("background-color: lightgrey;")
         self.resizing_btn.show()
 
+        self.title = QLabel(self.window)
+        self.title.setText(self.tile_title)
+        self.title.setGeometry(self.x_coord, self.y_coord, self.tile_width, TITLE_HEIGHT)
+        self.title.setAlignment(QtCore.Qt.AlignCenter)
+        self.title.setStyleSheet("background-color: lightgrey;")
+        self.title.setFont(QFont('Ubuntu', 14))
+        self.title.show()
+
         self.save_btn = QtWidgets.QPushButton(self.window)
         self.save_btn.setText("Save")
         self.save_btn.pressed.connect(self.save_data_to_file)
-        self.save_btn.setGeometry(self.y_coord, self.x_coord, 3*self.btn_size, self.btn_size)
-        self.save_btn.move(self.x_coord + 2*self.btn_size, self.y_coord)
+        self.save_btn.setGeometry(self.x_coord + self.tile_width - 4*self.btn_size, self.y_coord, 3*self.btn_size, self.btn_size)
         self.save_btn.setStyleSheet("background-color: lightgrey;")
         self.save_btn.show()
 
@@ -166,6 +185,7 @@ class Tile(QWidget):
         self.resizing_btn.hide()
         self.moving_btn.hide()
         self.save_btn.hide()
+        self.title.hide()
         self.data_table.hide()
 
     """move/resize tile functions"""
@@ -202,9 +222,10 @@ class Tile(QWidget):
             self.moving_btn.move(self.window.mouse_x_coord, self.y_coord)
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width,
                                    self.y_coord - self.btn_size + self.tile_height)
-            self.save_btn.move(self.window.mouse_x_coord + 2*self.btn_size, self.y_coord)
+            self.save_btn.move(self.x_coord + self.tile_width - 4*self.btn_size, self.y_coord)
             self.remove_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width, self.y_coord)
-            self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
+            self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width, self.tile_height - TITLE_HEIGHT)
+            self.title.move(self.x_coord, self.y_coord)
         else:
             """do nothing"""
 
@@ -213,16 +234,18 @@ class Tile(QWidget):
         idx = tiles.index(self)
         if idx == len(tiles) - 1:
             next_tile_x = float("inf")
-            next_tile_y = float("inf")
         else:
             next_tile_x = tiles[idx + 1].x_coord
 
         new_width = self.window.mouse_x_coord - self.x_coord
-        if new_width + self.x_coord < next_tile_x and new_width > MIN_TILE_WIDTH and new_width < self.MAX_TILE_WIDTH:
+        if new_width + self.x_coord < next_tile_x and MIN_TILE_WIDTH < new_width < self.MAX_TILE_WIDTH:
             self.tile_width = new_width
             self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size, self.tile_height - self.btn_size)
             self.remove_btn.move(self.window.mouse_x_coord - self.btn_size, self.y_coord)
-            self.data_table.setGeometry(self.x_coord, self.y_coord, self.tile_width, self.tile_height)
+            self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width, self.tile_height - TITLE_HEIGHT)
+            self.title.setGeometry(self.x_coord, self.y_coord, self.tile_width, TITLE_HEIGHT)
+            self.save_btn.move(self.x_coord + self.tile_width - 4*self.btn_size, self.y_coord)
+
 
     def handle_single_click(self, item):
         #This function will manage adding asset to wallet
