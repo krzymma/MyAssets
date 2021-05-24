@@ -6,6 +6,8 @@ from utils import TileType
 import datetime as dt
 import matplotlib
 from numpy import around
+import pandas as pd
+from utils import Interval
 matplotlib.use('Qt5Agg')
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -13,9 +15,10 @@ from matplotlib.figure import Figure
 
 class MplCanvas(FigureCanvasQTAgg):
 
-    def __init__(self, parent=None, width=4, height=3, dpi=100):
+    def __init__(self, parent=None, width=4, height=6, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
+        fig.subplots_adjust(bottom=0.3)
         super(MplCanvas, self).__init__(fig)
 
 class StatsLabel(QWidget):
@@ -44,18 +47,20 @@ class StatsLabel(QWidget):
         
         self.layout.addLayout(labels_layout)
         self.layout.addWidget(sep_line)
-        self.setLayout(self.layout)   
+        self.setLayout(self.layout) 
 
 
 class SpecWindow(QWidget):
     def __init__(self, tile_type, asset_code, name):
         super().__init__()
-        self.setFixedSize(QSize(600, 450))
+        self.setFixedSize(QSize(600, 500))
         self.setWindowTitle(asset_code)
 
+        self.tile_type = tile_type
+        self.code = asset_code
         self.name = name
         self.data = None #last year by days
-        self.add_data = None #last 5 years by months
+        self.add_data = pd.DataFrame() #last 5 years by months
 
         self.yesterday = dt.date.today() - dt.timedelta(days=1)
         self.year_ago = self.yesterday - dt.timedelta(weeks=52)
@@ -70,21 +75,78 @@ class SpecWindow(QWidget):
         self.calc_stats()
 
         self.plot = MplCanvas(self)
+        self.buttons = None
 
         self.layout = QVBoxLayout()
         self.init_ui()
 
-    def calc_stats(self):
-        self.last_close = self.data.iat[0, 3]
-        self.fst_close = self.data.iat[-1, 3]
 
-        last_high = self.data.iat[0, 1]
-        last_low = self.data.iat[0, 2]
+    def calc_stats(self):
+        self.last_close = self.data.iat[0, 4]
+        self.fst_close = self.data.iat[-1, 4]
+
+        last_high = self.data.iat[0, 2]
+        last_low = self.data.iat[0, 3]
         self.day_range = (last_low, last_high)
 
         year_high = self.data['HIGH'].max()
         year_low = self.data['LOW'].min()
         self.year_range = (year_low, year_high)
+
+
+    def update_plot(self):
+        self.buttons[self.plot_state].toggle()
+        self.plot_state = self.sender().text()   
+        state = self.plot_state
+        data = self.data[['DATE', 'CLOSE']]
+        fmt = matplotlib.dates.DateFormatter('%d/%m')
+
+        #this will be formatted soon
+        if state == '1 Week':
+            data = data.head(7)
+        elif state == '1 Month':
+            data = data.head(30)
+        elif state == '3 Months':
+            data = data.head(90)
+        elif state == '6 Months':
+            data = data.head(180)
+            fmt = None
+        elif state == '1 Year':
+            fmt = None
+        else:
+            fmt = None
+            '''
+            Clicking '5 Years' requires downloading more data
+            Since our API allows us to download data that differ at most by year, 
+            we have to repeat it 5 times
+            '''
+            if self.add_data.empty:
+                start = dt.date.today() - dt.timedelta(days=1)
+                end = start - dt.timedelta(weeks=52)
+                for i in range(5):
+                    yearly_data = load_historical_assets(
+                                                        self.tile_type, 
+                                                        self.code,
+                                                        end.strftime('%m/%d/%y'),
+                                                        start.strftime('%m/%d/%y'),
+                                                        interval=Interval.WEEK )
+                    self.add_data = self.add_data.append(yearly_data)
+                    start = end
+                    end = end - dt.timedelta(weeks=52)
+                self.add_data = self.add_data[['DATE', 'CLOSE']]
+
+            data = self.add_data
+
+        self.plot.axes.cla()
+        if data.iat[-1, 1] > data.iat[0, 1]:
+            self.plot.axes.plot(data['DATE'], data['CLOSE'], 'r') #decline
+        elif data.iat[-1, 1] <= data.iat[0, 1]:
+            self.plot.axes.plot(data['DATE'], data['CLOSE'], 'g') #stonks
+        self.plot.axes.tick_params('x', rotation=45)
+        if fmt != None:
+            self.plot.axes.xaxis.set_major_formatter(fmt)
+        self.plot.draw()
+
 
     def init_ui(self):
         name_label = QLabel(self.name)
@@ -94,14 +156,18 @@ class SpecWindow(QWidget):
         sep_line.setFrameShape(QFrame.HLine)
         sep_line.setLineWidth(1)
 
-        self.plot.axes.plot([0,1,2,3,4], [10,1,20,3,40]) #just a placeholder at this moment
-
         hbox_buttons = QHBoxLayout()
-        button_labs = ['1 week', '1 Month', '3 Months',
+        button_labs = ['1 Week', '1 Month', '3 Months',
                        '6 Months', '1 Year', '5 Years']
-        buttons = [QPushButton(label) for label in button_labs]
-        for button in buttons:
+        self.buttons = {label:QPushButton(label) for label in button_labs}
+        for button in self.buttons.values():
             hbox_buttons.addWidget(button)
+            button.clicked.connect(self.update_plot)
+            button.setCheckable(True)
+
+        self.plot_state = '1 Week' 
+        self.buttons['1 Week'].click()
+        self.buttons['1 Week'].toggle()
 
         grid_labels = QGridLayout()
         year_delta = around(100*(self.last_close - self.fst_close)/self.fst_close, 2)

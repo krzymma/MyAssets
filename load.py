@@ -75,6 +75,8 @@ def load_historical_assets(tile_type, asset_code, date_from, date_to, interval=I
     data = pd.DataFrame(result,
                         columns=columns,
                         index=range(1, len(result) + 1))
+    data['DATE'] = pd.to_datetime(data['DATE'], format='%m/%d/%Y')
+
     return data
 
 

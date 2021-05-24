@@ -1,5 +1,5 @@
-from PyQt5.QtGui import QFont
-
+import os
+from PyQt5.QtGui import QFont, QIcon
 from specific import SpecWindow
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
@@ -65,6 +65,7 @@ class Tile(QWidget):
         self.move = 0
         if self.data is not None:
             self.model = TableModel(self.data)
+            self.model.item
         self.init_ui()
 
     def load_data(self):
@@ -142,10 +143,9 @@ class Tile(QWidget):
 
         self.remove_btn = QtWidgets.QPushButton(self.window)
         self.remove_btn.pressed.connect(self.remove_self)
-        self.remove_btn.setText("X")
+        self.remove_btn.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/' + 'x_icon.png'))
         self.remove_btn.setGeometry(self.y_coord, self.x_coord, self.btn_size, self.btn_size)
         self.remove_btn.move(self.tile_width - self.btn_size + self.x_coord, self.y_coord)
-        self.remove_btn.setStyleSheet("background-color: red;")
         self.remove_btn.show()
 
         self.moving_btn = QtWidgets.QPushButton(self.window)
@@ -252,7 +252,9 @@ class Tile(QWidget):
         pass
 
     def handle_double_click(self, item):
-        asset_code = self.data.index[item.row()]
-        name = self.data['Name'][item.row()]
+        asset_code = self.data['Code'][item.row()+1]
+        if self.tile_type == TileType.CRYPTO:
+            asset_code = asset_code[:-3]
+        name = self.data['Name'][item.row()+1]
         self.spec_window = SpecWindow(self.tile_type, asset_code, name)
         self.spec_window.show()
