@@ -101,7 +101,6 @@ class SpecWindow(QWidget):
         data = self.data[['DATE', 'CLOSE']]
         fmt = matplotlib.dates.DateFormatter('%d/%m')
 
-        #this will be formatted soon
         if state == '1 Week':
             data = data.head(7)
         elif state == '1 Month':

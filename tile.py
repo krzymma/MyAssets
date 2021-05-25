@@ -65,7 +65,6 @@ class Tile(QWidget):
         self.move = 0
         if self.data is not None:
             self.model = TableModel(self.data)
-            self.model.item
         self.init_ui()
 
     def load_data(self):

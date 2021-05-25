@@ -1,7 +1,11 @@
 import fetch
 import utils
-from utils import Interval
+from utils import Interval, TileType
 import pandas as pd
+import datetime as dt
+
+TODAY = dt.date.today()
+YESTERDAY = TODAY - dt.timedelta(days=1)
 
 """functions load data from fav.txt file"""
 def load_currency(values, idx, asset):
@@ -98,6 +102,7 @@ def load_top_stocks():
                         columns=['Code', 'Name', 'Last price'],
                         index=range(1, len(result) + 1)
     )
+    data = append_closes(data, TileType.STOCKS)
     return data
 
 def load_top_futures():
@@ -112,6 +117,7 @@ def load_top_futures():
 def load_top_cryptos():
     rates = fetch.get_top_cryptos()
     result = merge_key_value(rates)
+    print(result)
     data = pd.DataFrame(result,
                         columns=['Code', 'Name', 'Last price'],
                         index=range(1, len(result) + 1)
@@ -123,3 +129,16 @@ def merge_key_value(rates):
     for i in range(0, len(list(rates.values()))):
         result.append((list(rates.keys())[i],) + list(rates.values())[i])
     return result
+
+def load_last_close(asset_code, tile_type):
+    end = TODAY.strftime('%m/%d/%y')
+    start = YESTERDAY.strftime('%m/%d/%y')
+    row = load_historical_assets(tile_type, asset_code, start, end)
+    if row.empty:
+        return 'NaN'
+    return load_historical_assets(tile_type, asset_code, start, end).iat[0, 4]
+
+def append_closes(df, tile_type):
+    closes = [load_last_close(code, tile_type) for code in df['Code']]
+    df['Prev. close'] = closes
+    return df
