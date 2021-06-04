@@ -89,13 +89,12 @@ class OpDialog(QDialog):
 
 
     def get_data(self):
-
         chosen_date = self.date_from.text().split('.')
         start_date = '' + chosen_date[1] + '/' + chosen_date[0] + '/' + chosen_date[2] + ''
         chosen_date = self.date_to.text().split('.')
         end_date = '' + chosen_date[1] + '/' + chosen_date[0] + '/' + chosen_date[2] + ''
 
-        if self.tile_option == "":
+        if self.tile_option == "" or (self.tile_option == "Top" and self.tile_type == utils.TileType.CURRENCIES and self.add_asset.text() == ""):
             self.approved = False
 
         if self.tile_option == 'Historical' or self.tile_type == utils.TileType.CURRENCIES:

@@ -149,6 +149,7 @@ class Tile(QWidget):
 
         self.moving_btn = QtWidgets.QPushButton(self.window)
         self.moving_btn.pressed.connect(self.moving_on)
+        self.moving_btn.clicked.connect(self.moving_off)
         self.moving_btn.setGeometry(self.x_coord, self.y_coord, self.btn_size, self.btn_size)
         self.moving_btn.setStyleSheet("background-color: grey;")
         self.moving_btn.show()
@@ -159,7 +160,7 @@ class Tile(QWidget):
         for i in range(0, no_col + 1):
             abs_width += self.data_table.columnWidth(i)
         self.MAX_TILE_WIDTH = abs_width + ZERO_COL_WIDTH
-        self.tile_width = self.MAX_TILE_WIDTH
+        self.tile_width = self.MAX_TILE_WIDTH + 5
 
     def save_data_to_file(self):
         folder_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select folder where your data will be saved')
@@ -192,6 +193,9 @@ class Tile(QWidget):
         self.window.curr_tile = self
         self.move = 1
 
+    def moving_off(self):
+        self.window.curr_tile = None
+
     def resizing_on(self):
         self.window.curr_tile = self
         self.move = 0
@@ -217,16 +221,32 @@ class Tile(QWidget):
 
         if left_limit < self.window.mouse_x_coord < right_limit:
             self.x_coord = self.window.mouse_x_coord
+            self.refresh_position()
 
-            self.moving_btn.move(self.window.mouse_x_coord, self.y_coord)
-            self.resizing_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width,
-                                   self.y_coord - self.btn_size + self.tile_height)
-            self.save_btn.move(self.x_coord + self.tile_width - 4*self.btn_size, self.y_coord)
-            self.remove_btn.move(self.window.mouse_x_coord - self.btn_size + self.tile_width, self.y_coord)
-            self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width, self.tile_height - TITLE_HEIGHT)
-            self.title.move(self.x_coord, self.y_coord)
+        elif len(tiles) > idx + 1 and self.window.mouse_x_coord > tiles[idx + 1].x_coord + tiles[idx + 1].tile_width:
+            self.switch_tiles(tiles, idx, idx + 1)
+        elif idx > 0 and  self.window.mouse_x_coord < tiles[idx - 1].x_coord:
+            self.switch_tiles(tiles, idx - 1, idx)
         else:
             """do nothing"""
+
+    def switch_tiles(self, tiles, left_idx, right_idx):
+        tiles[left_idx].x_coord, tiles[right_idx].x_coord = \
+            tiles[right_idx].x_coord - tiles[left_idx].tile_width + tiles[right_idx].tile_width, tiles[left_idx].x_coord
+        tiles[left_idx], tiles[right_idx] = tiles[right_idx], tiles[left_idx]
+        tiles[left_idx].refresh_position()
+        tiles[right_idx].refresh_position()
+        self.moving_off()
+
+    def refresh_position(self):
+        self.moving_btn.move(self.x_coord, self.y_coord)
+        self.resizing_btn.move(self.x_coord - self.btn_size + self.tile_width,
+                               self.y_coord - self.btn_size + self.tile_height)
+        self.save_btn.move(self.x_coord + self.tile_width - 4 * self.btn_size, self.y_coord)
+        self.remove_btn.move(self.x_coord - self.btn_size + self.tile_width, self.y_coord)
+        self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width,
+                                    self.tile_height - TITLE_HEIGHT)
+        self.title.move(self.x_coord, self.y_coord)
 
     """if it is possible resize tile"""
     def resize_tile(self, tiles):
