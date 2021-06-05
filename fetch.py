@@ -31,7 +31,7 @@ def get_stock_historical_data(stock, from_date, to_date, interval=Interval.DAY):
     return convert_data_to_dict(data_csv, NO_COL_STOCK)
 
 
-def get_futures_historical_data(material, from_date, to_date, interval=Interval.DAY):
+def get_material_historical_data(material, from_date, to_date, interval=Interval.DAY):
     url = 'https://www.marketwatch.com/investing/future/'+ material +\
         '/downloaddatapartial?startdate='+from_date+'%2000:00:00&enddate='+to_date+\
           '%2023:59:59&daterange=d30&frequency=p'+ str(interval) +'&csvdownload=true&downloadpartial=false&newdates=false'
@@ -43,7 +43,7 @@ def get_futures_historical_data(material, from_date, to_date, interval=Interval.
 def get_live_val(adress):
     html_data = requests.get(adress).text
     soup = BeautifulSoup(html_data, 'lxml')
-    rate = soup.find('bg-quote', class_="value").text.replace(',', '')
+    rate = soup.find('div', class_="intraday__data").find(class_="value").text.replace(',', '')
     return rate
 
 
@@ -85,7 +85,7 @@ def get_top_currencies(currency):
     return result
 
 """return dictionary key: code, value: name,price"""
-def get_top_futures():
+def get_top_materials():
     adress = 'https://www.marketwatch.com/investing/futures'
     html_data = requests.get(adress).text
     soup = BeautifulSoup(html_data, 'lxml')

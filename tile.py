@@ -1,5 +1,7 @@
 import os
 from PyQt5.QtGui import QFont, QIcon
+
+import utils
 from specific import SpecWindow
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
@@ -79,6 +81,7 @@ class Tile(QWidget):
 
         elif self.tile_type == TileType.FAVOURITES:
             self.data = load.load_fav_assets()
+            self.tile_title = "Favourites"
 
         elif self.tile_type == TileType.STOCKS:
 
@@ -101,17 +104,30 @@ class Tile(QWidget):
         elif self.tile_type == TileType.MATERIALS:
 
             if self.tile_option == 'Top':
-                self.data = load.load_top_futures()
-                self.tile_title = "Top futures"
+                self.data = load.load_top_materials()
+                self.tile_title = "Top materials"
             else:
                 self.data = load.load_historical_assets(TileType.MATERIALS, self.asset_code, self.start_date, self.end_date)
                 self.tile_title = "Historical for " + self.asset_code
+
+    def right_click(self, pos):
+        if 'Code' in self.data:
+            utils.save_fav_asset(self, self.data['Code'][self.data_table.rowAt(pos.y()) + 1])
+        elif 'Name' in self.data:
+            utils.save_fav_asset(self, self.asset_code + "-" +
+                                 utils.get_asset_code(self.data['Name'][self.data_table.rowAt(pos.y()) + 1]))
+        else:
+            """do nothing"""
+
 
     def init_ui(self):
         self.data_table = QtWidgets.QTableView(self.window)
         if self.data is not None:
             self.data_table.setModel(self.model)
             self.data_table.doubleClicked.connect(self.handle_double_click)
+            self.data_table.clicked.connect(self.handle_single_click)
+            self.data_table.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.data_table.customContextMenuRequested.connect(self.right_click)
 
         self.data_table.resizeColumnsToContents()
         self.adjust_initial_tile_width()
@@ -160,7 +176,8 @@ class Tile(QWidget):
         for i in range(0, no_col + 1):
             abs_width += self.data_table.columnWidth(i)
         self.MAX_TILE_WIDTH = abs_width + ZERO_COL_WIDTH
-        self.tile_width = self.MAX_TILE_WIDTH + 5
+        if self.MAX_TILE_WIDTH > MIN_TILE_WIDTH:
+            self.tile_width = self.MAX_TILE_WIDTH + 5
 
     def save_data_to_file(self):
         folder_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select folder where your data will be saved')
@@ -264,7 +281,6 @@ class Tile(QWidget):
             self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width, self.tile_height - TITLE_HEIGHT)
             self.title.setGeometry(self.x_coord, self.y_coord, self.tile_width, TITLE_HEIGHT)
             self.save_btn.move(self.x_coord + self.tile_width - 4*self.btn_size, self.y_coord)
-
 
     def handle_single_click(self, item):
         #This function will manage adding asset to wallet

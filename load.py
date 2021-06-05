@@ -17,8 +17,9 @@ def load_currency(values, idx, asset):
 
 
 def load_crypto(values, idx, asset):
-    idx.append(asset[1])
-    values.append(fetch.get_live_crypto_rate(asset[1]))
+
+    idx.append(asset[1][0:3] + "-" + asset[1][3:])
+    values.append(fetch.get_live_crypto_rate(asset[1][0:3], asset[1][3:]))
 
 
 def load_material(values, idx, asset):
@@ -28,7 +29,7 @@ def load_material(values, idx, asset):
 
 def load_stock(values, idx, asset):
     idx.append(asset[1])
-    values.append(fetch.get_live_crypto_rate(asset[1]))
+    values.append(fetch.get_live_stock_rate(asset[1]))
 
 
 def load_fav_assets():
@@ -74,7 +75,7 @@ def load_historical_assets(tile_type, asset_code, date_from, date_to, interval=I
         columns = ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     elif tile_type == utils.TileType.MATERIALS:
-        dict_data = fetch.get_futures_historical_data(asset_code, date_from, date_to, interval)
+        dict_data = fetch.get_material_historical_data(asset_code, date_from, date_to, interval)
         columns = ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE']
 
     result = merge_key_value(dict_data)
@@ -107,8 +108,8 @@ def load_top_stocks():
     data = append_closes(data, TileType.STOCKS)
     return data
 
-def load_top_futures():
-    rates = fetch.get_top_futures()
+def load_top_materials():
+    rates = fetch.get_top_materials()
     result = merge_key_value(rates)
     data = pd.DataFrame(result,
                         columns=['Code', 'Name', 'Last price'],
@@ -120,7 +121,6 @@ def load_top_futures():
 def load_top_cryptos():
     rates = fetch.get_top_cryptos()
     result = merge_key_value(rates)
-    print(result)
     data = pd.DataFrame(result,
                         columns=['Code', 'Name', 'Last price'],
                         index=range(1, len(result) + 1)
