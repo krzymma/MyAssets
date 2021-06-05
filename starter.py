@@ -153,3 +153,4 @@ window = MainWindow()
 window.showMaximized()
 
 app.exec_()
+

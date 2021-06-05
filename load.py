@@ -23,7 +23,11 @@ def load_crypto(values, idx, asset):
 
 
 def load_material(values, idx, asset):
-    idx.append(asset[1])
+    print(asset)
+    if asset[1] == "crude%20oil%20-%20electronic":
+        idx.append('Crude Oil')
+    else:
+        idx.append(asset[1])
     values.append(fetch.get_live_material_rate(asset[1]))
 
 

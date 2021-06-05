@@ -22,9 +22,13 @@ class Interval(Enum):
 
 def get_asset_code(asset):
     d = {}
-    d['Argentine Peso'] = 'ARS'
-    d['GC00'] = 'GOLD'
-    return d[asset]
+    file_name = os.path.dirname(os.path.abspath(__file__)) + '/' + 'assetDictionary.txt'
+    with open(file_name, 'r') as f:
+        content = f.readlines()
+    for el in content:
+        tmp = el.split(':')
+        d[tmp[1].strip('\n').lower()] = tmp[0]
+    return d[asset.lower()]
 
 
 def unique_line_in_file(line, file_name):
