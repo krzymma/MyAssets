@@ -287,9 +287,10 @@ class Tile(QWidget):
         pass
 
     def handle_double_click(self, item):
-        asset_code = self.data['Code'][item.row()+1]
-        if self.tile_type == TileType.CRYPTO:
-            asset_code = asset_code[:-3]
-        name = self.data['Name'][item.row()+1]
-        self.spec_window = SpecWindow(self.tile_type, asset_code, name)
-        self.spec_window.show()
+        if self.tile_option == 'Top':                
+            asset_code = self.data['Code'][item.row()+1]
+            if self.tile_type == TileType.CRYPTO:
+                asset_code = asset_code[:-3]
+            name = self.data['Name'][item.row()+1]
+            self.spec_window = SpecWindow(self.tile_type, asset_code, name)
+            self.spec_window.show()
