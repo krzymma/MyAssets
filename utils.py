@@ -22,7 +22,7 @@ class Interval(Enum):
 
 def get_asset_code(asset):
     d = {}
-    file_name = os.path.dirname(os.path.abspath(__file__)) + '/' + 'assetDictionary.txt'
+    file_name = os.path.dirname(os.path.abspath(__file__)) + '/textfiles/' + 'assetDictionary.txt'
     with open(file_name, 'r') as f:
         content = f.readlines()
     for el in content:
@@ -32,7 +32,7 @@ def get_asset_code(asset):
 
 
 def unique_line_in_file(line, file_name):
-    file_name = os.path.dirname(os.path.abspath(__file__)) + '/' + file_name
+    file_name = os.path.dirname(os.path.abspath(__file__)) + '/textfiles/' + file_name
     with open(file_name, 'r') as f:
         return line in f.readlines()
 
@@ -57,14 +57,14 @@ def save_fav_asset(tile, asset_code):
 
 
 def read_file(file_name):
-    file_name = os.path.dirname(os.path.abspath(__file__)) + '/' + file_name
+    file_name = os.path.dirname(os.path.abspath(__file__)) + '/textfiles/' + file_name
     with open(file_name, 'r') as f:
         content = (f.readlines())
     return [x.strip() for x in content]
 
 
 def write_file(file_name, line):
-    file_name = os.path.dirname(os.path.abspath(__file__)) + '/' + file_name
+    file_name = os.path.dirname(os.path.abspath(__file__)) + '/textfiles/' + file_name
     with open(file_name, 'a') as f:
         f.write(line + "\n")
 

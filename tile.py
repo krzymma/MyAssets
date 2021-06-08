@@ -5,7 +5,8 @@ import utils
 from specific import SpecWindow
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QFileDialog, QWidget, QMessageBox, QVBoxLayout, QLabel
+from PyQt5 import QtGui
+from PyQt5.QtWidgets import QMenu, QFileDialog, QWidget, QMessageBox, QVBoxLayout, QLabel
 from utils import TileType
 import load
 
@@ -58,6 +59,7 @@ class Tile(QWidget):
         self.window = current_window
         self.x_coord = x_coord
         self.data_table = None
+        self.table_menu = None
         self.resizing_btn = None
         self.moving_btn = None
         self.spec_window = None
@@ -111,21 +113,22 @@ class Tile(QWidget):
                 self.tile_title = "Historical for " + self.asset_code
 
     def right_click(self, pos):
-        if 'Code' in self.data:
-            utils.save_fav_asset(self, self.data['Code'][self.data_table.rowAt(pos.y()) + 1])
-        elif 'Name' in self.data:
-            utils.save_fav_asset(self, self.asset_code + "-" +
-                                 utils.get_asset_code(self.data['Name'][self.data_table.rowAt(pos.y()) + 1]))
-        else:
-            """do nothing"""
+        context_menu = QMenu(self.data_table)
+        fav_option = context_menu.addAction('Add to favourites')
+        action = context_menu.exec_(self.mapToGlobal(QtGui.QCursor.pos()))
 
+        if action == fav_option:
+            if 'Code' in self.data:
+                utils.save_fav_asset(self, self.data['Code'][self.data_table.rowAt(pos.y()) + 1])
+            elif 'Name' in self.data:
+                utils.save_fav_asset(self, self.asset_code + "-" +
+                                    utils.get_asset_code(self.data['Name'][self.data_table.rowAt(pos.y()) + 1]))
 
     def init_ui(self):
         self.data_table = QtWidgets.QTableView(self.window)
         if self.data is not None:
             self.data_table.setModel(self.model)
             self.data_table.doubleClicked.connect(self.handle_double_click)
-            self.data_table.clicked.connect(self.handle_single_click)
             self.data_table.setContextMenuPolicy(Qt.CustomContextMenu)
             self.data_table.customContextMenuRequested.connect(self.right_click)
 
@@ -158,7 +161,7 @@ class Tile(QWidget):
 
         self.remove_btn = QtWidgets.QPushButton(self.window)
         self.remove_btn.pressed.connect(self.remove_self)
-        self.remove_btn.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/' + 'x_icon.png'))
+        self.remove_btn.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/images/' + 'x_icon.png'))
         self.remove_btn.setGeometry(self.y_coord, self.x_coord, self.btn_size, self.btn_size)
         self.remove_btn.move(self.tile_width - self.btn_size + self.x_coord, self.y_coord)
         self.remove_btn.show()
@@ -281,10 +284,6 @@ class Tile(QWidget):
             self.data_table.setGeometry(self.x_coord, self.y_coord + TITLE_HEIGHT, self.tile_width, self.tile_height - TITLE_HEIGHT)
             self.title.setGeometry(self.x_coord, self.y_coord, self.tile_width, TITLE_HEIGHT)
             self.save_btn.move(self.x_coord + self.tile_width - 4*self.btn_size, self.y_coord)
-
-    def handle_single_click(self, item):
-        #This function will manage adding asset to wallet
-        pass
 
     def handle_double_click(self, item):
         if self.tile_option == 'Top':                

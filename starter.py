@@ -31,8 +31,8 @@ class Header(QWidget):
 
         hbox.addWidget(logo_lab)
         hbox.addStretch(1)
-        hbox.addWidget(balance_lab)
-        hbox.addWidget(balance_state_lab)
+        #hbox.addWidget(balance_lab)
+        #hbox.addWidget(balance_state_lab)
 
         self.close_btn = QtWidgets.QPushButton('Exit')
         self.close_btn.clicked.connect(self.window.close)
@@ -59,7 +59,7 @@ class MainSubFrame(QFrame):
         for text in ("Favourites", "Currencies", "Stocks", "Materials", "Cryptocurrencies"):
             menu.addAction(text)
         self.adding_button.setMenu(menu)
-        self.adding_button.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/' + 'plus_icon.svg'))
+        self.adding_button.setIcon(QIcon(os.path.dirname(os.path.abspath(__file__)) + '/images/' + 'plus_icon.svg'))
 
         self.vertical_layout = QVBoxLayout(self)
         self.vertical_layout.addWidget(self.adding_button, alignment=QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom)
