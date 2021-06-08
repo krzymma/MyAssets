@@ -14,7 +14,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
 class MplCanvas(FigureCanvasQTAgg):
-
+    #Matplotlib wrapper for Qt
     def __init__(self, parent=None, width=4, height=6, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
@@ -22,6 +22,7 @@ class MplCanvas(FigureCanvasQTAgg):
         super(MplCanvas, self).__init__(fig)
 
 class StatsLabel(QWidget):
+    #Label showing name and value of statistic
     def __init__(self, parent, title, value1, value2=None):
         super(StatsLabel, self).__init__(parent)
         self.layout = QVBoxLayout()
@@ -85,10 +86,12 @@ class SpecWindow(QWidget):
         self.last_close = self.data.iat[0, 4]
         self.fst_close = self.data.iat[-1, 4]
 
+        #last day interval
         last_high = self.data.iat[0, 2]
         last_low = self.data.iat[0, 3]
         self.day_range = (last_low, last_high)
 
+        #last year interval
         year_high = self.data['HIGH'].max()
         year_low = self.data['LOW'].min()
         self.year_range = (year_low, year_high)
